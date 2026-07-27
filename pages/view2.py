@@ -78,7 +78,7 @@ country_select = alt.selection_point(fields=["Country"], empty=False)
 
 # background
 background_2 = alt.Chart(world_map_2).transform_filter(alt.datum.id != 10).mark_geoshape(
-    fill="lightgray", stroke="black").properties(width=850, height=800).project("equalEarth")
+    fill="lightgray", stroke="black")
 
 # choropleth function
 def make_choropleth(year):
@@ -103,19 +103,17 @@ def make_choropleth(year):
                 "Total Number of Dead and Missing:Q",
                 scale=alt.Scale(scheme="oranges", domainMin=0),
                 title = "Total Number of Dead and Missing",
-                legend=alt.Legend(orient='top', padding = 10)),
+                legend=alt.Legend(orient='top', padding = 0)),
                 strokeWidth=alt.condition(country_select, alt.value(3), alt.value(0.5)),
-        ).add_params(country_select
-        ).project("equalEarth").properties(width=850, height=800, title = alt.Title('Distribution of Dead and Missing Immigrants by Country of Origin in ' + str(year),
-                                                                                    font ='Times New Roman', fontSize=28, fontWeight="bold"))
+        ).add_params(country_select)
         
     line_chart = alt.Chart(choropleth_dataset).transform_filter(country_select).mark_line(point=True).encode(
         x="Incident Year:O",
         y="Total Number of Dead and Missing:Q",
-        color=alt.Color("Country:N", title="Selected Countries", legend=alt.Legend(orient='right', padding=0)),
+        color=alt.Color("Country:N", title="Selected Countries", legend=alt.Legend(orient='right', padding=5)),
         tooltip = ["Incident Year:O", 'Country:N', "Total Number of Dead and Missing:Q" ]
     ).transform_filter(country_select
-    ).properties(height=400, width=350,
+    ).properties(height=300, width=350,
                 title=alt.Title("Trend of Selected Countries Over Years",
                         font ='Times New Roman', fontSize=24, fontWeight="bold",
                         subtitle="Select countries by clicking on the map or the donut chart",
@@ -124,19 +122,23 @@ def make_choropleth(year):
     
     donut = alt.Chart(df_top5).transform_calculate(
         Year=f'"{int(year)}"'
-        ).mark_arc(innerRadius=80, outerRadius=150).encode(
+        ).mark_arc(innerRadius=60, outerRadius=130).encode(
         theta="Total Number of Dead and Missing",
-        fill=alt.Fill("Country:N", title = "Top 5 Countries",),
+        fill=alt.Fill("Country:N", title = "Top 5 Countries",legend=alt.Legend(orient='right', padding=40)),
         tooltip=[
             alt.Tooltip("Country:N", title="Country"),
             alt.Tooltip('Year:Q', title='Year'),
             alt.Tooltip("Total Number of Dead and Missing:Q", title="Deaths"),
         ]).properties(
-            height=250, width=350,  title = alt.Title("Top 5 Countries by # of Dead & Missing in " + str(selected_year),
+            height=250, width=220,  title = alt.Title("Top 5 Countries by # of Dead & Missing in " + str(selected_year),
                                         font ='Times New Roman', fontSize=22, fontWeight="bold")
         ).add_params(country_select)
+        
+    map_layer = (background_2 + choropleth).project(
+        "equalEarth", scale=220, translate=[400, 380]
+        ).properties(width=950,height=900)
     
-    map_chart = alt.hconcat((background_2 + choropleth), alt.vconcat(donut, line_chart).resolve_legend(color='independent', fill='independent')).resolve_scale(color='independent', fill='independent')
+    map_chart = alt.hconcat(map_layer, alt.vconcat(donut, line_chart).resolve_legend(color='independent', fill='independent')).resolve_scale(color='independent', fill='independent')
     
     return map_chart
 
@@ -149,6 +151,15 @@ selected_year = st.selectbox(
 )
 
 map_chart = make_choropleth(selected_year)
+
+st.markdown(
+    f"""
+    <h1 style='font-family: Times New Roman; font-size: 40px; text-align: center;'>
+        Distribution of Dead and Missing Immigrants by Country of Origin in {selected_year}
+    </h1>
+    """,
+    unsafe_allow_html=True
+)
 
 st.altair_chart(map_chart, use_container_width=False)
 
