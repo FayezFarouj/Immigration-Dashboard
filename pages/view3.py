@@ -98,93 +98,97 @@ continent_mapping = {
 
 heat_df['Continent'] = heat_df['Continent'].replace(continent_mapping)
 
-#Selector Parameter
-region_selection = alt.selection_point(fields=['Region of Incident'], empty=True) # if nothing is selected, show all on='click' # user clicks to select 
-year_selection = alt.selection_point(fields=['Incident Year'], empty=True)
+# Titles and mutliselect filter for continents
+st.markdown(
+    """
+    <h1 style='font-family: Times New Roman; font-size: 45px; text-align: center;'>
+        Top 4 Causes of Immigration Deaths and Incidents
+    </h1>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    """
+    <p style='font-family: Times New Roman; font-size: 25px; text-align: center;'>
+        These 4 Causes Account for 80% of Immigration Deaths and Incidents
+    </p>
+    """,
+    unsafe_allow_html=True
+)
+
 continents = sorted(heat_df['Continent'].dropna().unique().tolist())
+selected_continents = st.multiselect(
+    "Continents",
+    options=continents,
+    default=continents
+)
 
-params = []
-for cont in continents:
-    param_name = cont.replace(' ', '_')
-    p = alt.param(
-        name=param_name,
-        value=True,
-        bind=alt.binding_checkbox(name=cont)
-    )
-    params.append(p)
+# Filtered dataset based on selected continents
+heat_df_filtered = heat_df[heat_df["Continent"].isin(selected_continents)]
 
-# Build the filter expression string 
-expr_parts = [
-    f"((datum.Continent == '{cont}') && {cont.replace(' ', '_')})"
-    for cont in continents
-]
-filter_expr = " || ".join(expr_parts)
+# Year selection for heatmaps and line chart
+year_selection = alt.selection_point(fields=['Incident Year'], empty=True)
 
 #Four Heatmaps
 region_order = ['Caribbean', 'Central America', 'Central Asia', 'East Asia', 'Europe',
                 'Middle East', 'North Africa', 'North America', 'South America', 'South Asia', 'Southeast Asia',
                 'Sub-Saharan Africa', 'West Africa']
 
-heatmap_drowning = alt.Chart(heat_df).transform_filter(alt.datum["Cause of Death"] == "Drowning").transform_filter(filter_expr).transform_filter(year_selection).mark_rect().encode(
+heatmap_drowning = alt.Chart(heat_df_filtered).transform_filter(alt.datum["Cause of Death"] == "Drowning").transform_filter(year_selection).mark_rect().encode(
         x=alt.X("Incident Year:N", sort="ascending", title="Year", axis=alt.Axis(labelAngle=-45)),
         y=alt.Y("Region of Incident:N", sort=region_order, title="Subregion"),
         color=alt.Color("Total Number of Dead and Missing:Q",
                         scale=alt.Scale(scheme="tealblues"),
                         title="Deaths"),
-        opacity=alt.condition(region_selection, alt.value(1), alt.value(0.1))
-    ).properties(width=475, height=300, title=alt.Title('Drowning', font='Times New Roman', fontSize=22)).add_params(region_selection, *params)
+        #opacity=alt.condition(region_selection, alt.value(1), alt.value(0.1))
+    ).properties(width=475, height=300, title=alt.Title('Drowning', font='Times New Roman', fontSize=22))
 
-heatmap_hazardous_transport = alt.Chart(heat_df).transform_filter(alt.datum["Cause of Death"] == "Vehicle accident / death linked to hazardous transport"
-        ).transform_filter(filter_expr).transform_filter(year_selection).mark_rect().encode(
+heatmap_hazardous_transport = alt.Chart(heat_df_filtered).transform_filter(alt.datum["Cause of Death"] == "Vehicle accident / death linked to hazardous transport"
+        ).transform_filter(year_selection).mark_rect().encode(
         x=alt.X("Incident Year:N", sort="ascending", title="Year", axis=alt.Axis(labelAngle=-45)),
         y=alt.Y("Region of Incident:N", sort=region_order, title="Subregion"),
         color=alt.Color("Total Number of Dead and Missing:Q",
                         scale=alt.Scale(scheme="warmgreys"),
                         title="Deaths"),
-        opacity=alt.condition(region_selection, alt.value(1), alt.value(0.1))
-    ).properties(width=475, height=300, title=alt.Title('Hazardous Transport', font='Times New Roman', fontSize=22)).add_params(region_selection, *params)
+        #opacity=alt.condition(region_selection, alt.value(1), alt.value(0.1))
+    ).properties(width=475, height=300, title=alt.Title('Hazardous Transport', font='Times New Roman', fontSize=22))
 
-heatmap_harsh_conditions = alt.Chart(heat_df).transform_filter(alt.datum["Cause of Death"] == "Harsh environmental conditions / lack of adequate shelter, food, water"
-        ).transform_filter(filter_expr).transform_filter(year_selection).mark_rect().encode(
+heatmap_harsh_conditions = alt.Chart(heat_df_filtered).transform_filter(alt.datum["Cause of Death"] == "Harsh environmental conditions / lack of adequate shelter, food, water"
+        ).transform_filter(year_selection).mark_rect().encode(
         x=alt.X("Incident Year:N", sort="ascending", title="Year", axis=alt.Axis(labelAngle=-45)),
         y=alt.Y("Region of Incident:N", sort=region_order, title="Subregion"),
         color=alt.Color("Total Number of Dead and Missing:Q",
                         scale=alt.Scale(scheme="greens"),
                         title="Deaths"),
-        opacity=alt.condition(region_selection, alt.value(1), alt.value(0.1))
-    ).properties(width=475, height=300,  title=alt.Title('Harsh Environmental Conditions', font='Times New Roman', fontSize=22)).add_params(region_selection, *params)
+        #opacity=alt.condition(region_selection, alt.value(1), alt.value(0.1))
+    ).properties(width=475, height=300,  title=alt.Title('Harsh Environmental Conditions', font='Times New Roman', fontSize=22))
         
-heatmap_violence = alt.Chart(heat_df).transform_filter(alt.datum["Cause of Death"] == "Violence"
-        ).transform_filter(filter_expr).transform_filter(year_selection).mark_rect().encode(
+heatmap_violence = alt.Chart(heat_df_filtered).transform_filter(alt.datum["Cause of Death"] == "Violence"
+        ).transform_filter(year_selection).mark_rect().encode(
         x=alt.X("Incident Year:N", sort="ascending", title="Year", axis=alt.Axis(labelAngle=-45)),
         y=alt.Y("Region of Incident:N", sort=region_order, title="Subregion"),
         color=alt.Color("Total Number of Dead and Missing:Q",
                         scale=alt.Scale(scheme="reds"),
                         title="Deaths"),
-        opacity=alt.condition(region_selection, alt.value(1), alt.value(0.1))
-    ).properties(width=475, height=300, title=alt.Title('Violence', font='Times New Roman', fontSize=22)).add_params(region_selection, *params)
+        #opacity=alt.condition(region_selection, alt.value(1), alt.value(0.1))
+    ).properties(width=475, height=300, title=alt.Title('Violence', font='Times New Roman', fontSize=22))
         
 
 #Final Heatmap View
 top_row = (heatmap_drowning | heatmap_hazardous_transport).resolve_scale(color='independent')
 bottom_row = (heatmap_harsh_conditions | heatmap_violence).resolve_scale(color='independent')
 heatmap_final = alt.vconcat(top_row, bottom_row
-                ).properties(title = alt.Title('Top 4 Reasons for Immigration Deaths and Inicidents',
-                            font = 'Times New Roman', fontWeight='bold', fontSize=35, anchor='middle',
-                            subtitle = 'These 4 Reasons Cause 80% of Immigration Deaths and Incidents',
-                            subtitleFont='Times New Roman', subtitleFontWeight='normal', subtitleFontSize=30, offset=40)
                 )
 
 #Multipl-line Chart
-line_df = heat_df.groupby(['Cause of Death', 'Incident Year', 'Region of Incident', 'Continent'])['Total Number of Dead and Missing'].sum().reset_index()
-line_chart = alt.Chart(line_df).transform_filter(filter_expr).transform_filter(region_selection).mark_line(point=True).encode(
+line_df = heat_df_filtered.groupby(['Cause of Death', 'Incident Year', 'Region of Incident', 'Continent'])['Total Number of Dead and Missing'].sum().reset_index()
+line_chart = alt.Chart(line_df).mark_line(point=True).encode(
     x = alt.X('Incident Year:O', axis=alt.Axis(labelAngle=0)),
     y = alt.Y('sum(Total Number of Dead and Missing):Q', title = "Number of Dead and Missing"),
     color = alt.Color('Cause of Death:N', scale=alt.Scale(range=['steelblue', 'green', 'black', 'red'])),
     tooltip = ['Incident Year']
-).properties(width = 1000).add_params(year_selection, *params)
-
-
+).properties(width = 1000).add_params(year_selection)
 
 
 #Combined View
