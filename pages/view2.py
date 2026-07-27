@@ -112,28 +112,31 @@ def make_choropleth(year):
     line_chart = alt.Chart(choropleth_dataset).transform_filter(country_select).mark_line(point=True).encode(
         x="Incident Year:O",
         y="Total Number of Dead and Missing:Q",
-        color=alt.Color("Country:N", title="Selected Countries", legend=alt.Legend(orient='bottom')),
+        color=alt.Color("Country:N", title="Selected Countries", legend=alt.Legend(orient='right', padding=0)),
         tooltip = ["Incident Year:O", 'Country:N', "Total Number of Dead and Missing:Q" ]
     ).transform_filter(country_select
-    ).properties(height=400, width=250, title=alt.Title("Trend of Selected Countries Over Years",
-                                                        font ='Times New Roman', fontSize=24, fontWeight="bold"))
+    ).properties(height=400, width=350,
+                title=alt.Title("Trend of Selected Countries Over Years",
+                        font ='Times New Roman', fontSize=24, fontWeight="bold",
+                        subtitle="Select countries by clicking on the map or the donut chart",
+                        subtitleFont='Times New Roman', subtitleFontWeight='normal', subtitleFontSize=18)
+                )
     
     donut = alt.Chart(df_top5).transform_calculate(
         Year=f'"{int(year)}"'
-        ).mark_arc(innerRadius=50).encode(
+        ).mark_arc(innerRadius=80, outerRadius=150).encode(
         theta="Total Number of Dead and Missing",
-        fill=alt.Fill("Country:N", title = "Top 5 Countries",
-                    legend = alt.Legend(orient = 'right', padding = 15)),
+        fill=alt.Fill("Country:N", title = "Top 5 Countries",),
         tooltip=[
             alt.Tooltip("Country:N", title="Country"),
             alt.Tooltip('Year:Q', title='Year'),
             alt.Tooltip("Total Number of Dead and Missing:Q", title="Deaths"),
         ]).properties(
-            height = 400, width =250,  title = alt.Title("Top 5 Countries by Number of Dead and Missing Immigrants in " + str(selected_year),
-                                        font ='Times New Roman', fontSize=24, fontWeight="bold")
+            height=250, width=350,  title = alt.Title("Top 5 Countries by # of Dead & Missing in " + str(selected_year),
+                                        font ='Times New Roman', fontSize=22, fontWeight="bold")
         ).add_params(country_select)
     
-    map_chart = alt.hconcat((background_2 + choropleth), alt.vconcat(line_chart, donut))
+    map_chart = alt.hconcat((background_2 + choropleth), alt.vconcat(donut, line_chart).resolve_legend(color='independent', fill='independent')).resolve_scale(color='independent', fill='independent')
     
     return map_chart
 
@@ -148,15 +151,4 @@ selected_year = st.selectbox(
 map_chart = make_choropleth(selected_year)
 
 st.altair_chart(map_chart, use_container_width=False)
-
-
-
-# STREAMLIT WIDGETS
-
-
-
-#hart = make_choropleth(selected_year)
-
-#st.altair_chart(chart, use_container_width=True)
-
 
