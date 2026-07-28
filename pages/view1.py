@@ -144,14 +144,9 @@ bar = alt.Chart(df).mark_bar().encode(
     ).transform_filter(pt_select).add_params(year_select).properties(width = 900, height=250)
 
 # World background
-title = alt.TitleParams(
-    text=alt.expr("'Global Distribution of Immigration Incidents in ' + toString(year_select)")
-)
 background = alt.Chart(world_map).transform_filter(alt.datum.id != 10).mark_geoshape(fill="lightgray", stroke="grey"
     ).project(type="equalEarth", scale=1600, center=[20, 20]
-    ).properties(width=900, height=600, 
-                title = alt.Title("Global Distribution of Immigration Incidents", font ='Times New Roman', 
-                                fontSize=40, fontWeight="bold")).project("equalEarth")
+    ).properties(width=900, height=600).project("equalEarth")
 
 # Points on main world map (by region color)
 points = alt.Chart(df).mark_circle(opacity=0.6).encode(
