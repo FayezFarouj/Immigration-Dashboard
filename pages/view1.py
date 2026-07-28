@@ -7,12 +7,10 @@ from vega_datasets import data
 st.set_page_config(layout="wide")
 
 alt.renderers.enable('html')
-alt.data_transformers.disable_max_rows()
-dataset = pd.read_csv("data/Missing_Migrants_Global_Figures_cleaned.csv")
+alt.data_transformers.enable("vegafusion")
 
 # updating the values in the 'Region of Incident' column to get better alignment based on the coordinates
 # of the incident:
-dataset[['Latitude', 'Longitude']] = dataset['Coordinates'].str.split(',', expand=True).astype(float)
 def assign_region(lat, lon):
     # Asia subregion
     if 10 <= lat <= 45 and 25 <= lon <= 65:
@@ -48,18 +46,26 @@ def assign_region(lat, lon):
     # Oceania
     elif -50 <= lat <= 0 and 110 <= lon <= 180:
         return "Oceania"
-    
+
     else:
         return "Central Asia"
 
+@st.cache_data
+def load_data():
+    dataset = pd.read_csv("data/Missing_Migrants_Global_Figures_cleaned.csv")
 
+    dataset[['Latitude', 'Longitude']] = (
+        dataset['Coordinates']
+        .str.split(',', expand=True)
+        .astype(float)
+    )
 
-dataset["Region of Incident"] = dataset.apply(
-    lambda row: assign_region(row["Latitude"], row["Longitude"]), axis=1
-)
-
-df = dataset.copy()
-name_map = {
+    dataset["Region of Incident"] = dataset.apply(
+        lambda row: assign_region(row["Latitude"], row["Longitude"]),
+        axis=1
+    )
+    
+    name_map = {
     'Syrian Arab Republic': 'Syria',
     'Iran (Islamic Republic of)': 'Iran',
     "Côte d'Ivoire": "Cote d'Ivoire",
@@ -72,10 +78,17 @@ name_map = {
     "Democratic People's Republic of Korea": "Korea, Democratic People's Republic of",
     "Taiwan": "Taiwan, Province of China",
     "United Kingdom of Great Britain and Northern Ireland" : 'UK'
-}
+    }
 
-df['Country of Origin'] = df['Country of Origin'].replace(name_map)
-df['Country of Incident'] = df['Country of Incident'].replace(name_map)
+    dataset['Country of Origin'] = dataset['Country of Origin'].replace(name_map)
+    dataset['Country of Incident'] = dataset['Country of Incident'].replace(name_map)
+    
+    dataset['Death_Size'] = pd.cut(dataset['Total Number of Dead and Missing'], bins=4, labels=False)
+
+    return dataset
+
+
+df = load_data()
 
 #Bounds for the zoomed map
 bounds = {
@@ -119,14 +132,14 @@ bar = alt.Chart(df).mark_bar().encode(
         x=alt.X('Incident Year:O', title='Year', axis=alt.Axis(labelAngle=0, labelLimit=300)),
         y=alt.Y('sum(Total Number of Dead and Missing):Q', title='Deaths'),
         color=alt.condition(year_select, alt.value("steelblue"), alt.value("lightgrey"))
-    ).transform_filter(pt_select).add_params(year_select).properties(width = 1350, height=350)
+    ).transform_filter(pt_select).add_params(year_select).properties(width = 900, height=250)
 
 # World background
 title = alt.TitleParams(
     text=alt.expr("'Global Distribution of Immigration Incidents in ' + toString(year_select)")
 )
 background = alt.Chart(world_map).transform_filter(alt.datum.id != 10).mark_geoshape(fill="lightgray", stroke="grey"
-    ).properties(width=1350, height=800, title = alt.Title("Global Distribution of Immigration Incidents", font ='Times New Roman', fontSize=40, fontWeight="bold")).project("equalEarth")
+    ).properties(width=900, height=600, title = alt.Title("Global Distribution of Immigration Incidents", font ='Times New Roman', fontSize=40, fontWeight="bold")).project("equalEarth")
 
 # Points on main world map (by region color)
 points = alt.Chart(df).mark_circle(opacity=0.6).encode(
@@ -161,8 +174,7 @@ def make_layout(region):
             ).mark_circle(opacity=0.7).encode(
                 longitude="Longitude:Q",
                 latitude="Latitude:Q",
-                size = alt.Size('Total Number of Dead and Missing:Q',
-                                bin=alt.Bin(maxbins=4),
+                size = alt.Size('Death_Size:Q',
                                 scale=alt.Scale(range=[20, 200]),
                                 legend = alt.Legend(title='Number of Dead and Missing')),
                 fill=alt.Fill(
