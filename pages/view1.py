@@ -4,7 +4,16 @@ import streamlit as st
 
 from vega_datasets import data
 
+#Title and configuration
 st.set_page_config(layout="wide")
+st.markdown(
+    """
+    <h1 style='font-family: Times New Roman; font-size: 45px; text-align: center;'>
+        Global Distribution of Immigration Deaths and Incidents
+    </h1>
+    """,
+    unsafe_allow_html=True
+)
 
 alt.renderers.enable('html')
 alt.data_transformers.enable("vegafusion")
@@ -94,24 +103,24 @@ df = load_data()
 bounds = {
     "Please Choose a Region": [1590, 0],
     
-    "North Africa": [200, 480],
-    "West Africa": [400, 250],
+    "North Africa": [250, 450],
+    "West Africa": [320, 280],
     "Sub-Saharan Africa": [10, 50],
     
-    "Middle East": [-180, 520],
-    "South Asia": [-610, 470],
-    "East Asia": [-1150, 600],
-    "Southeast Asia": [-1010, 290],
+    "Middle East": [-200, 500],
+    "South Asia": [-500, 425],
+    "East Asia": [-1000, 600],
+    "Southeast Asia": [-900, 290],
     
-    "Europe": [120, 860],
+    "Europe": [120, 775],
     
     "Caribbean": [1200, 420],
     "Central America": [1300, 400],
     "South America": [1000, 100],
-    "North America": [1410, 670],
+    "North America": [1350, 610],
     
     "Oceania": [-850, -50],
-    "Central Asia": [-480, 780]
+    "Central Asia": [-400, 675]
 }
 
 #UI parameters
@@ -139,7 +148,10 @@ title = alt.TitleParams(
     text=alt.expr("'Global Distribution of Immigration Incidents in ' + toString(year_select)")
 )
 background = alt.Chart(world_map).transform_filter(alt.datum.id != 10).mark_geoshape(fill="lightgray", stroke="grey"
-    ).properties(width=900, height=600, title = alt.Title("Global Distribution of Immigration Incidents", font ='Times New Roman', fontSize=40, fontWeight="bold")).project("equalEarth")
+    ).project(type="equalEarth", scale=1600, center=[20, 20]
+    ).properties(width=900, height=600, 
+                title = alt.Title("Global Distribution of Immigration Incidents", font ='Times New Roman', 
+                                fontSize=40, fontWeight="bold")).project("equalEarth")
 
 # Points on main world map (by region color)
 points = alt.Chart(df).mark_circle(opacity=0.6).encode(
@@ -165,9 +177,9 @@ def make_layout(region):
     # Zoomed base map
     base_zoom = alt.Chart(world_map).mark_geoshape(fill="lightgrey", stroke="black").project(
             type="mercator",
-            scale=650,
+            scale=600,
             translate=bounds.get(region, bounds["Please Choose a Region"])
-        ).properties(width=850, height=400)
+        ).properties(width=650, height=400)
 
     pts_zoom = alt.Chart(df).transform_calculate(
                 Migration_Route_Status="datum['Migration Route'] == null ? 'Missing' : 'Present'"
@@ -189,9 +201,9 @@ def make_layout(region):
                 (alt.datum["Incident Year"] == year_param)
             ).project(
                 type="mercator",
-                scale=650,
+                scale=800,
                 translate=bounds.get(region, bounds["Please Choose a Region"])
-            ).properties(width=850, height=400)
+            ).properties(width=650, height=400)
             
     bar_zoom = alt.Chart(df).transform_filter((alt.datum["Region of Incident"] == region) &
                         (alt.datum["Incident Year"] == year_param)).transform_aggregate(
@@ -213,14 +225,13 @@ def make_layout(region):
         size="independent",
         fill='independent',
         color='independent'
-    ).resolve_legend('independent').properties(title = alt.Title('Distribution of Immigration Incidents in ' + str(region),
-                                                                                        font ='Times New Roman', fontSize=30, fontWeight="bold", anchor = 'middle'))
+    ).resolve_legend('independent')
     return full_chart
 
 
 ## Streamlit controls
 
-st.altair_chart(main_viz, use_container_width=True)
+#st.altair_chart(main_viz, use_container_width=True)
 
 region_dropdown_options = st.selectbox(
     "Zoom Region:",
