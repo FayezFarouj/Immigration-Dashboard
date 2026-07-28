@@ -226,7 +226,7 @@ def make_layout(region):
 
 ## Streamlit controls
 
-st.altair_chart(main_viz, use_container_width=True)
+st.altair_chart(main_viz, use_container_width=False)
 
 region_dropdown_options = st.selectbox(
     "Zoom Region:",
