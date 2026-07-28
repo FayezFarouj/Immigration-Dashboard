@@ -141,12 +141,12 @@ bar = alt.Chart(df).mark_bar().encode(
         x=alt.X('Incident Year:O', title='Year', axis=alt.Axis(labelAngle=0, labelLimit=300)),
         y=alt.Y('sum(Total Number of Dead and Missing):Q', title='Deaths'),
         color=alt.condition(year_select, alt.value("steelblue"), alt.value("lightgrey"))
-    ).transform_filter(pt_select).add_params(year_select).properties(width = 900, height=250)
+    ).transform_filter(pt_select).add_params(year_select).properties(width = 1100, height=250)
 
 # World background
 background = alt.Chart(world_map).transform_filter(alt.datum.id != 10).mark_geoshape(fill="lightgray", stroke="grey"
     ).project(type="equalEarth", scale=1600, center=[20, 20]
-    ).properties(width=900, height=600).project("equalEarth")
+    ).properties(width=1100, height=600).project("equalEarth")
 
 # Points on main world map (by region color)
 points = alt.Chart(df).mark_circle(opacity=0.6).encode(
