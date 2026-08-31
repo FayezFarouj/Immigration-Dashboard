@@ -7,6 +7,33 @@ from vega_datasets import data
 
 st.set_page_config(layout="wide")
 
+with st.expander("How to explore this dashboard", expanded=False):
+    st.markdown("""
+        <div style="background-color: #D0FFD0;
+            border-left: 5px solid #4CAF50;
+            padding: 12px 18px;
+            margin-top: 25px;
+            margin-bottom: 30px;
+            font-family: Georgia, serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        ">
+        
+    **Select a year from the dropdown**
+    → Update the world map and the donut chart.
+
+    **Click a country on the donut chart**
+    → Highlight its trend in the line chart for comparison with other countries.
+
+    **Click a country on the map**
+    → Highlight its trend in the line chart for comparison with other countries.
+
+    **Hover over countries, donut segments, or line points**
+    → View detailed information and exact values.
+        </div>
+    """, unsafe_allow_html=True)
+
 dataset = pd.read_csv('data/Missing_Migrants_Global_Figures_cleaned.csv')
     
 country_ids = pd.read_csv('https://raw.githubusercontent.com/kemiolamudzengi/dsci-320-datasets/main/country-ids-and-continents.csv')
@@ -157,9 +184,15 @@ st.markdown(
     <h1 style='font-family: Times New Roman; font-size: 40px; text-align: center;'>
         Distribution of Dead and Missing Immigrants by Country of Origin in {selected_year}
     </h1>
+    
+    <h2 style='font-family: Times New Roman; font-size:24px; text-align: center;
+    color: #D32F2F;'>
+        Open "How to explore" to discover how to interact with this dashboard
+    </h2>
+    
     """,
     unsafe_allow_html=True
-)
+) 
 
 st.altair_chart(map_chart, use_container_width=False)
 
