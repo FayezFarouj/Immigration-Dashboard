@@ -4,6 +4,38 @@ import streamlit as st
 
 from vega_datasets import data
 
+
+with st.expander("How to explore this dashboard", expanded=False):
+    st.markdown("""
+        <div style="background-color: #D0FFD0;
+            border-left: 5px solid #4CAF50;
+            padding: 12px 18px;
+            margin-top: 25px;
+            margin-bottom: 30px;
+            font-family: Georgia, serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        ">
+    
+    **Click a point on the map**  
+    → View the distribution over time of its corresponding region in the histogram below.
+
+    **Click a year on the histogram**  
+    → Filter the incidents shown on the map.
+
+    **Select a region from the dropdown**  
+    → Zoom in and explore incidents by country.
+
+    **Adjust the year**  
+    → Examine how incidents in the selected region changed over time.
+
+    **Hover over points or bars**  
+    → View detailed information.
+        </div>
+    """,unsafe_allow_html=True
+)
+    
 #Title and configuration
 st.set_page_config(layout="wide")
 st.markdown(
@@ -11,6 +43,12 @@ st.markdown(
     <h1 style='font-family: Times New Roman; font-size: 45px; text-align: center;'>
         Global Distribution of Immigration Deaths and Incidents
     </h1>
+    
+    <h2 style='font-family: Times New Roman; font-size:24px; text-align: center;
+    color: #D32F2F;'>
+        Open "How to explore" to discover how to interact with this dashboard
+    </h2>
+    
     """,
     unsafe_allow_html=True
 )
