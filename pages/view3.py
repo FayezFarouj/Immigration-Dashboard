@@ -4,6 +4,31 @@ import altair as alt
 
 st.set_page_config(layout="wide")
 
+with st.expander("How to explore this dashboard", expanded=False):
+    st.markdown("""
+                <div style="background-color: #D0FFD0;
+                border-left: 5px solid #4CAF50;
+                padding: 10px;
+                margin-top: 25px;
+                margin-bottom: 30px;
+                font-family: Georgia, serif;
+                font-size: 18px;
+                font-weight: 700;
+                color: #333;
+                ">
+
+        **Select one or more continents from the dropdown**
+        → Update the heatmaps and line chart to show only the selected continents.
+
+        **Hover over heatmap cells or line points**
+        → View exact death counts by region, year, and cause of death.
+        
+        **Click a year on the line chart**
+        → Highlight that year's values across all four heatmaps.
+                
+    """, unsafe_allow_html=True
+    )
+
 dataset = pd.read_csv('data/Missing_Migrants_Global_Figures_cleaned.csv')
 
 dataset[['Latitude', 'Longitude']] = dataset['Coordinates'].str.split(',', expand=True).astype(float)
@@ -101,18 +126,20 @@ heat_df['Continent'] = heat_df['Continent'].replace(continent_mapping)
 # Titles and mutliselect filter for continents
 st.markdown(
     """
-    <h1 style='font-family: Times New Roman; font-size: 45px; text-align: center;'>
+    <h1 style='font-family: Times New Roman; font-size: 45px; text-align: center;
+    padding: 0px'>
         Top 4 Causes of Immigration Deaths and Incidents
     </h1>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <p style='font-family: Times New Roman; font-size: 25px; text-align: center;'>
-        These 4 Causes Account for 80% of Immigration Deaths and Incidents
-    </p>
+    
+    <h2 style='font-family: Times New Roman; font-size: 25px; font-weight: normal;
+    text-align: center; padding: 0px'>
+            These 4 Causes Account for 80% of Immigration Deaths and Incidents
+    </h2>
+    
+    <h3 style='font-family: Times New Roman; font-size: 24px; text-align: center;
+    color: #D32F2F'>
+        Open "How to explore" to discover how to interact with this dashboard
+    </h3>
     """,
     unsafe_allow_html=True
 )
